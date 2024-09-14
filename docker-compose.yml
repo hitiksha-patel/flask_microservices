@@ -16,10 +16,8 @@ services:
       timeout: 10s
       retries: 5
 
-
   web:
     build: .
-    command: flask run --host=0.0.0.0 --port=5000
     volumes:
       - .:/app
     ports:
@@ -31,3 +29,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  migrate:
+    build: .
+    command: >
+      bash -c "
+      flask db init || echo 'Migrations folder already exists';
+      flask db migrate -m 'Auto migration' || echo 'No changes to migrate';
+      flask db upgrade
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://user:admin@db/flask_microservice
