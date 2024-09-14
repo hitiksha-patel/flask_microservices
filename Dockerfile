@@ -4,7 +4,7 @@ FROM python:3.9-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies, including default-mysql-client
 RUN apt-get update && apt-get install -y \
     build-essential \
     default-libmysqlclient-dev \

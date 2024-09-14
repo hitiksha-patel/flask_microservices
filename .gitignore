@@ -21,8 +21,6 @@ __pycache__/
 # Docker
 *.pid
 db_data/
-migrations
-.dockerignore
 
 # IDEs and Editors
 .vscode/
