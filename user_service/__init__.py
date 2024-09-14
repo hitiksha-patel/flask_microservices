@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
 
 # Initialize the database
 db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app():
     # Load environment variables from .env file
@@ -18,9 +20,12 @@ def create_app():
 
     # Initialize the database with the app
     db.init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         # Import routes (or other components that need the app context)
-        from . import routes
+        from .models import User
+
+        db.create_all()
 
     return app
