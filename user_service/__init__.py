@@ -12,13 +12,16 @@ def create_app():
 
     app = Flask(__name__)
 
+    # Load config from environment variables
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # Initialize the extensions
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Register blueprints or routes
     with app.app_context():
-        from .models import User
+        from . routes import index, create_user, db_check
 
     return app

@@ -20,7 +20,7 @@ __pycache__/
 
 # Docker
 *.pid
-db_data/
+db_data_user_service/
 .dockerignore
 migrations/
 
