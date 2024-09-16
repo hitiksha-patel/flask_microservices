@@ -22,6 +22,6 @@ def create_app():
 
     # Register blueprints or routes
     with app.app_context():
-        from . routes import index, create_user, db_check
+        from . routes import index, db_check, register
 
     return app

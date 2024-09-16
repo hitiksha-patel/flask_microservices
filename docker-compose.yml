@@ -27,4 +27,6 @@ services:
     depends_on:
       db_user_service:
         condition: service_healthy
+    volumes:
+      - ./user_service:/app 
 

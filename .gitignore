@@ -22,7 +22,8 @@ __pycache__/
 *.pid
 db_data_user_service/
 .dockerignore
-migrations/
+*.migrations/
+user_service/migrations/
 
 # IDEs and Editors
 .vscode/
