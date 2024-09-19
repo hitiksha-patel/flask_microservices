@@ -1,14 +1,17 @@
-from flask import current_app as app
+from flask import Blueprint, current_app as app
+from flask_jwt_extended import create_access_token
 from . import db
 from . models import User
 from sqlalchemy import text
 from flask import request, jsonify
 
-@app.route('/')
+user_blueprint = Blueprint('user', __name__)
+
+@user_blueprint.route('/')
 def index():
     return "Hello, Flask Microservice!"
 
-@app.route('/db_check')
+@user_blueprint.route('/db_check', methods=['GET'])
 def db_check():
     try:
         with db.engine.connect() as connection:
@@ -18,25 +21,21 @@ def db_check():
         return f"Database Connection Failed: {str(e)}"
 
 
-@app.route('/register', methods=['POST'])
+@user_blueprint.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-
-    # Validate that required fields are present
     email = data.get('email')
     password = data.get('password')
 
     if not email or not password:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    # Check if user already exists
     if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'User with this email is already exists'}), 400
+        return jsonify({'error': 'User with this email already exists'}), 409
 
     try:
-        # Create a new user
-        new_user = User(email=email)
-        new_user.set_password(password)  # Hash the password before storing it
+        # Create a new user (password is hashed in the constructor)
+        new_user = User(email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
     except Exception as e:
@@ -44,5 +43,28 @@ def register():
         return jsonify({'error': str(e)}), 500
 
     return jsonify({'message': 'User registered successfully'}), 201
+
+
+@user_blueprint.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    # Check if both email and password are provided
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
+
+    # Fetch user by email
+    user = User.query.filter_by(email=email).first()
+
+    # Check if user exists and the password is correct
+    if user is None or not user.verify_password(password):
+        return jsonify({'error': 'Invalid email or password'}), 401
+
+    # Generate a JWT token for the authenticated user
+    access_token = create_access_token(identity=user.email)
+
+    return jsonify({'token': access_token}), 200
 
 

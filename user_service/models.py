@@ -1,6 +1,5 @@
 from datetime import datetime
-from . import db
-from werkzeug.security import generate_password_hash, check_password_hash
+from . import db, bcrypt
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,13 +22,15 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     modified_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    def set_password(self, password):
-        """Hashes the password and stores it."""
-        self.password_hash = generate_password_hash(password)
+    # Constructor
+    def __init__(self, email, password):
+        self.email = email
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    def check_password(self, password):
-        """Checks if the given password matches the stored hash."""
-        return check_password_hash(self.password_hash, password)
+    # Password verification method
+    def verify_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
 
+    # Representation method
     def __repr__(self):
         return f'<User {self.firstname} {self.lastname}>'
