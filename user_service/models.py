@@ -16,7 +16,7 @@ class User(db.Model):
     
     # Dates and Age Information
     birthdate = db.Column(db.Date, nullable=True)
-    age = db.Column(db.Integer, nullable=True)  # Optional; can be derived from birthdate
+    age = db.Column(db.Integer, nullable=True)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
