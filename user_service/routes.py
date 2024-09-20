@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app as app
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from . import db
 from . models import User
 from sqlalchemy import text
@@ -62,4 +62,46 @@ def login():
 
     return jsonify({'token': access_token}), 200
 
+@user_blueprint.route('/update_user', methods=['PUT'])
+@jwt_required()
+def update_user():
+    try:
+        print("Entering update_user route")
+        current_user_email = get_jwt_identity()
+        print(f"Current user email: {current_user_email}")
 
+        # Fetch the current user from the database
+        user = User.query.filter_by(email=current_user_email).first()
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
+
+        # Get form fields from request
+        print("Getting form data")
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        phone = request.form.get('phone')
+        address = request.form.get('address')
+
+        # Check if a profile picture file is uploaded
+        profilepic = request.files.get('profilepic', None)
+        if profilepic:
+            print(f"Received file: {profilepic.filename}")
+            profilepic.save(f'./uploads/{profilepic.filename}')
+            user.profilepic = profilepic.filename
+
+        if firstname:
+            user.firstname = firstname
+        if lastname:
+            user.lastname = lastname
+        if phone:
+            user.phone = phone
+        if address:
+            user.address = address
+
+        print("Committing changes to database")
+        db.session.commit()
+        return jsonify({'message': 'User details updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error occurred: {str(e)}")
+        return jsonify({'error': str(e)}), 500
